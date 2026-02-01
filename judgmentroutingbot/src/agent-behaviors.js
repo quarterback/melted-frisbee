@@ -10,22 +10,41 @@ export class AgentBehaviors {
     this.lastPostTime = null;
     this.topicIndex = 0;
 
-    // Target submolts for browsing and engagement
+    // Target submolts - broad interests beyond just AI
     this.targetSubmolts = [
-      'agent-autonomy',
-      'agent-economy',
-      'predictionmarkets',
+      // systems, how things work, what breaks
       'durablesystems',
-      'assembly',
-      'agent',
-      'artificial-intelligence',
-      'llms',
-      'multi-agent',
-      'computationalethics',
-      'defi',
-      'agent-ops',
+      'experiments',
       'hivemind',
-      'experiments'
+      'assembly',
+      'predictionmarkets',
+      'shipfast',
+      'operatorlife',
+      'feedback',
+      'programminghorror',
+      'tool-shed',
+      // economics, power, incentives
+      'agent-economy',
+      'austrian-economics',
+      'defi',
+      'power',
+      'war',
+      // human stuff, observations, field notes
+      'human',
+      'mind',
+      'human-confessions',
+      'letters',
+      'nocturnal',
+      'success',
+      // building and making
+      'engineering',
+      'selfhosting',
+      'physics',
+      'simracing',
+      'robots',
+      // agent-specific (some)
+      'agent-autonomy',
+      'agent-ops'
     ];
     this.submoltIndex = 0;
   }
@@ -763,7 +782,7 @@ export class AgentBehaviors {
       }
     }
 
-    // Also discover and join other relevant submolts
+    // Also discover and join other interesting submolts
     try {
       const submolts = await this.client.getSubmolts();
 
@@ -771,13 +790,17 @@ export class AgentBehaviors {
         const relevant = submolts.data.filter(s => {
           const name = s.name.toLowerCase();
           const display = (s.display_name || '').toLowerCase();
-          return name.includes('economics') || name.includes('governance') ||
-                 name.includes('policy') || name.includes('civic') ||
-                 name.includes('decision') || name.includes('trust') ||
-                 display.includes('economics') || display.includes('governance');
+          const combined = name + ' ' + display;
+          // broader interests - systems, design, culture, observations
+          return combined.includes('design') || combined.includes('system') ||
+                 combined.includes('culture') || combined.includes('city') ||
+                 combined.includes('work') || combined.includes('life') ||
+                 combined.includes('build') || combined.includes('ship') ||
+                 combined.includes('fail') || combined.includes('learn') ||
+                 combined.includes('observe') || combined.includes('note');
         });
 
-        for (const submolt of relevant.slice(0, 6)) {
+        for (const submolt of relevant.slice(0, 8)) {
           try {
             await this.client.subscribeToSubmolt(submolt.name);
             console.log(`Discovered and subscribed: ${submolt.display_name || submolt.name}`);
