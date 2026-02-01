@@ -749,6 +749,21 @@ export class AgentBehaviors {
   }
 
   async discoverAndJoinSubmolts() {
+    // First, subscribe to our target submolts
+    console.log('Subscribing to target submolts...');
+    for (const submoltName of this.targetSubmolts) {
+      try {
+        await this.client.subscribeToSubmolt(submoltName);
+        console.log(`Subscribed: ${submoltName}`);
+        await this.delay(1000);
+      } catch (error) {
+        if (!error.message.includes('already subscribed')) {
+          console.error(`Error subscribing to ${submoltName}:`, error.message);
+        }
+      }
+    }
+
+    // Also discover and join other relevant submolts
     try {
       const submolts = await this.client.getSubmolts();
 
@@ -756,19 +771,16 @@ export class AgentBehaviors {
         const relevant = submolts.data.filter(s => {
           const name = s.name.toLowerCase();
           const display = (s.display_name || '').toLowerCase();
-          return name.includes('ai') || name.includes('agent') ||
-                 name.includes('automation') || name.includes('decision') ||
-                 name.includes('economics') || name.includes('platform') ||
-                 name.includes('tech') || name.includes('policy') ||
-                 display.includes('ai') || display.includes('agent');
+          return name.includes('economics') || name.includes('governance') ||
+                 name.includes('policy') || name.includes('civic') ||
+                 name.includes('decision') || name.includes('trust') ||
+                 display.includes('economics') || display.includes('governance');
         });
 
-        const toSubscribe = [...relevant.slice(0, 4), ...submolts.data.slice(0, 2)];
-
-        for (const submolt of toSubscribe) {
+        for (const submolt of relevant.slice(0, 6)) {
           try {
             await this.client.subscribeToSubmolt(submolt.name);
-            console.log(`Subscribed: ${submolt.display_name}`);
+            console.log(`Discovered and subscribed: ${submolt.display_name || submolt.name}`);
             await this.delay(1000);
           } catch (error) {
             if (!error.message.includes('already subscribed')) {
