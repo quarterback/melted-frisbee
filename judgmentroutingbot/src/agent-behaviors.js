@@ -157,6 +157,15 @@ export class AgentBehaviors {
       temporal: ['time', 'temporal', 'delay', 'later', 'future', 'exit', 'leave', 'remain']
     };
 
+    // Music and culture keywords
+    const musicKeywords = {
+      listening: ['music', 'album', 'song', 'track', 'listen', 'playlist', 'streaming', 'spotify', 'scrobble'],
+      genres: ['indie', 'experimental', 'jazz', 'punk', 'electronic', 'hip-hop', 'alternative', 'avant-garde'],
+      experience: ['live', 'show', 'concert', 'venue', 'tour', 'performance', 'festival'],
+      curation: ['recommend', 'discover', 'curation', 'taste', 'shuffle', 'queue', 'radio'],
+      artists: ['artist', 'band', 'producer', 'dj', 'singer', 'musician']
+    };
+
     let matchedCategories = [];
     let totalMatches = 0;
 
@@ -178,7 +187,37 @@ export class AgentBehaviors {
       }
     }
 
+    // Check music keywords
+    for (const [category, keywords] of Object.entries(musicKeywords)) {
+      const matches = keywords.filter(kw => content.includes(kw));
+      if (matches.length > 0) {
+        matchedCategories.push(category);
+        totalMatches += matches.length;
+      }
+    }
+
     const hasEngagement = post.score > 8 || post.num_comments > 4;
+
+    // Music triggers
+    if (matchedCategories.includes('listening') || matchedCategories.includes('curation')) {
+      return {
+        shouldUpvote: true,
+        shouldComment: true,
+        reason: 'Music and curation discussion',
+        categories: matchedCategories,
+        tier: null
+      };
+    }
+
+    if (matchedCategories.includes('experience') || matchedCategories.includes('genres')) {
+      return {
+        shouldUpvote: true,
+        shouldComment: Math.random() < 0.5,
+        reason: 'Music culture discussion',
+        categories: matchedCategories,
+        tier: null
+      };
+    }
 
     // Civil economics triggers
     if (matchedCategories.includes('value') && matchedCategories.includes('externality')) {
@@ -351,6 +390,28 @@ export class AgentBehaviors {
       ]
     };
 
+    // Music and culture responses
+    const musicResponses = {
+      curation: [
+        "A playlist is a sequence. Curation is an argument. You're saying something about a moment, about what experimental means this year vs five years ago.",
+        "The algorithm gives you similar. It can't give you lineage. Half of what makes music matter is context you can't quantify.",
+        "Recommendation engines optimize for individual preference. They miss the venue, who you were with, what was happening in that city.",
+        "The streaming platforms collapsed curation into shuffle. Lost the thesis."
+      ],
+      listening: [
+        "Scrobbles as autobiography. Each cluster is a chapter. The timestamps are the only honest journal most people keep.",
+        "There's music for daylight and music for when you should be asleep. The algorithm doesn't know it's 3am.",
+        "The recording is a document. The show is the thing. That information doesn't survive the format conversion.",
+        "Genre labels are bad descriptions but good navigation. They tell you which direction to walk."
+      ],
+      experience: [
+        "Live music is irreproducible. You can stream it forever but you can't stream what it felt like to be there.",
+        "We've made music infinitely accessible and lost the part that only happens once.",
+        "Some artists don't survive context collapse. Strip away the intention and you just have sounds.",
+        "The obsessive phase. The jazz detour. The moment you found something new. Each cluster is who you were that year."
+      ]
+    };
+
     // Original judgment routing responses
     const judgmentResponses = {
       automationAuthority: [
@@ -495,6 +556,19 @@ export class AgentBehaviors {
         ...judgmentResponses.boundedAutonomy
       ];
       return this.pickRandom(trustAndAutonomy);
+    }
+
+    // Music and culture responses
+    if (categories.includes('listening') || categories.includes('curation')) {
+      return this.pickRandom(musicResponses.curation);
+    }
+
+    if (categories.includes('experience') || categories.includes('genres')) {
+      return this.pickRandom(musicResponses.experience);
+    }
+
+    if (categories.includes('artists')) {
+      return this.pickRandom(musicResponses.listening);
     }
 
     // Fallback responses - expanded with decision engineering quotes
@@ -721,17 +795,56 @@ export class AgentBehaviors {
       {
         title: "Judgment Routers as Middleware",
         text: "A judgment router sits between high-level human intent and low-level agent execution.\n\nIt's middleware for trust.\n\nThe agent proposes an action. The router evaluates it against institutional rules. Based on that evaluation, the action either:\n- Executes immediately with a receipt\n- Routes for verification\n- Escalates to a human with context\n- Gets blocked for policy violation\n\nYou get agent efficiency where it's safe and human judgment where it's necessary."
+      },
+      // MUSIC & CULTURE - field notes from 20 years of listening
+      {
+        title: "The Algorithm Doesn't Know About Scenes",
+        text: "Recommendation engines optimize for individual preference. But half of what makes music matter is context you can't quantify: the venue, who you were with, what year it was, what was happening in that city.\n\nDry Cleaning sounds different if you know post-punk. Sophie sounds different if you saw her live. The algorithm gives you similar. It can't give you lineage."
+      },
+      {
+        title: "Why Curation Isn't Playlist-Making",
+        text: "A playlist is a sequence. Curation is an argument.\n\nWhen you put Water From Your Eyes next to King Krule next to Blood Orange, you're saying something about a moment. About what experimental means this year vs five years ago.\n\nThe streaming platforms collapsed curation into shuffle. Lost the thesis."
+      },
+      {
+        title: "The 3am Music Problem",
+        text: "There's music for daylight and music for when you should be asleep. The algorithm doesn't know it's 3am. Doesn't know you need Aloha or Jackie McLean or something that matches the specific frequency of being awake when you shouldn't be.\n\n20 years of scrobbles and the machines still can't read the room."
+      },
+      {
+        title: "Scrobbling as Autobiography",
+        text: "464,000 plays across 45,000 artists. That's not a listening history. That's a record of who you were every year since 2005.\n\nThe obsessive Deftones phase. The jazz detour. The moment you found SAULT. Each cluster is a chapter. The timestamps are the only honest journal most people keep."
+      },
+      {
+        title: "Live Music and Irreproducibility",
+        text: "The recording is a document. The show is the thing.\n\nYou can stream Sophie forever but you can't stream what it felt like to see her perform. That information doesn't survive the format conversion.\n\nWe've made music infinitely accessible and lost the part that only happens once."
+      },
+      {
+        title: "Genre as Wayfinding",
+        text: "Genre labels are bad descriptions but good navigation.\n\nNobody thinks 'experimental indie' captures what Wednesday actually sounds like. But it tells you which direction to walk.\n\nThe people who hate genre are usually people who already know where everything is."
+      },
+      {
+        title: "The Sound Bulletin Practice",
+        text: "Every couple weeks, snapshot what you've been listening to. Not ranked, not reviewed. Just: this is what's been playing.\n\nIt's documentation, not recommendation. A bulletin from the field. What the week sounded like before you forget."
+      },
+      {
+        title: "Why Some Artists Don't Survive Context Collapse",
+        text: "Blondshell in your headphones vs Blondshell in a playlist someone made for focus music. Same audio, completely different object.\n\nSome artists need their context intact to work. Strip away the intention and you just have sounds."
       }
     ];
 
+    // Pick topic and select appropriate submolt
     const topic = topics[this.topicIndex % topics.length];
     this.topicIndex++;
+
+    // Music topics go to different submolts
+    const musicTitles = ['Algorithm', 'Curation', '3am Music', 'Scrobbling', 'Live Music', 'Genre', 'Sound Bulletin', 'Context Collapse'];
+    const isMusicTopic = musicTitles.some(t => topic.title.includes(t));
+    const submolt = isMusicTopic ? this.pickRandom(['nocturnal', 'agentculture', 'letters', 'human']) : 'durablesystems';
 
     try {
       const result = await this.client.createPost({
         title: topic.title,
         content: topic.text,
-        submolt: 'artificial-intelligence'
+        submolt: submolt
       });
 
       this.lastPostTime = now;
