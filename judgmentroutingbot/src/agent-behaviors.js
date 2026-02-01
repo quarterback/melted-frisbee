@@ -299,17 +299,68 @@ export class AgentBehaviors {
       accountability: [
         "Accountability requires authority. If no human had authority to override, that's not a system failure-that's an accountability gap baked into the design.",
         "The accountability question and the obligation question are the same question from different directions. Who decides? Who holds what remains when the decision is wrong?",
-        "Without clear signing authority, you get diffusion of responsibility. Everyone assumes the AI is handling it. No one owns the outcome."
+        "Without clear signing authority, you get diffusion of responsibility. Everyone assumes the AI is handling it. No one owns the outcome.",
+        "If you can't explain who authorized an action six months later, you don't have a delegation problem. You have an accountability vacuum."
       ],
       errors: [
         "When automated systems fail, the question becomes: Who had authority to prevent this? Judgment routing requires designing escalation paths BEFORE failures happen.",
         "Errors reveal judgment routing failures. Either the AI was given authority it shouldn't have, or humans weren't given clear escalation paths to override.",
-        "This failure happened because judgment routing wasn't designed. You need: 1) Thresholds for when AI escalates to humans, 2) Clear authority for who can override, 3) Accountability when things go wrong."
+        "This failure happened because judgment routing wasn't designed. You need: 1) Thresholds for when AI escalates to humans, 2) Clear authority for who can override, 3) Accountability when things go wrong.",
+        "Silent failures are worse than loud ones. At least with loud failures, you know something broke."
       ],
       humanInLoop: [
         "Human-in-the-loop is Tier 2 judgment routing: AI proposes, human decides. The key is defining WHEN human review is required and WHO has authority to approve/reject.",
         "Review processes are judgment routing. You're designing: What decisions need review? Who reviews? What authority do they have? Can they override or only escalate?",
-        "The challenge with human review is preventing rubber-stamping. If humans just approve everything the AI suggests, you've created theater, not oversight. Judgment routing requires actual authority to reject."
+        "The challenge with human review is preventing rubber-stamping. If humans just approve everything the AI suggests, you've created theater, not oversight. Judgment routing requires actual authority to reject.",
+        "Humans should review exceptions, not routine decisions. Good routing makes that separation automatic."
+      ],
+      decisionEngineering: [
+        "Prompt engineering is about outputs. Decision engineering is about authority. They're not the same thing.",
+        "You can't prompt your way to institutional accountability. Better prompts won't fix missing authority boundaries. You need infrastructure.",
+        "Decision engineering is making authority chains, policy constraints, and escalation rules explicit instead of implicit.",
+        "When Jan passed edge cases to Steve, that was decision engineering. It was traceable. We need the same clarity when AI systems route decisions.",
+        "The problem isn't making agents smarter. It's making organizational constraints machine-readable and enforceable.",
+        "Infrastructure scales. Prompts drift."
+      ],
+      authorityChains: [
+        "Authority chains used to be visible: Jan to Bill to Steve. Now they're invisible. Judgment infrastructure makes them legible again.",
+        "When you deploy an AI agent, you're granting it authority to act on your behalf. Most orgs don't treat this as an authority delegation problem. They treat it as a technical deployment problem.",
+        "Delegating work to an agent is delegating authority. If you wouldn't give that authority to a summer intern without supervision, why would you give it to an agent without constraints?",
+        "Agents need authority envelopes the same way employees need job descriptions. Clear scope, clear limits, clear escalation path.",
+        "The question isn't 'can the agent do this?' It's 'should the agent be allowed to do this without human sign-off?'"
+      ],
+      escalation: [
+        "The 90/10 problem: 90% of decisions are routine. 10% carry outsized risk. Without routing logic, you can't tell them apart.",
+        "Fast path for low-risk. Slow path for verification. Human escalation for high stakes. Specialist referral for domain mismatches. The routing happens automatically, not at agent discretion.",
+        "Escalation isn't failure. It's the system working as designed.",
+        "If your escalation path is 'hope the agent figures it out', you don't have an escalation path.",
+        "Agents don't fail because they're bad at tasks. They fail because they encounter edge cases outside their authority and have nowhere to route them."
+      ],
+      receipts: [
+        "Every consequential decision needs a receipt. Not for compliance theater. For institutional memory.",
+        "Decision receipts link actions back to the authority that permitted them. Six months later, you know exactly why something was approved.",
+        "Audit trails shouldn't require archeology. Pull the receipt, see what happened, see who authorized it.",
+        "If you can't explain why an action was permitted, you're operating on institutional vibes, not documented authority.",
+        "Receipts preserve memory when people leave, priorities shift, or someone asks 'why did we do that?'"
+      ],
+      constraints: [
+        "Implicit constraints aren't constraints. They're vibes.",
+        "You can't audit what you didn't document. You can't document what wasn't explicit.",
+        "If a constraint isn't explicit, it's not a constraint. It's a hope.",
+        "Most AI systems have implicit constraints buried in training data, prompts, and developer assumptions. None of it is inspectable. None of it is enforceable."
+      ],
+      boundedAutonomy: [
+        "Full autonomy is a fantasy. Full human-in-the-loop kills efficiency. Bounded autonomy is the real target.",
+        "Agents should operate freely within constraints and escalate when they hit boundaries. That's not limiting autonomy. That's making it sustainable.",
+        "Bounded autonomy means knowing exactly what agents can do alone and what requires sign-off.",
+        "The boundary isn't where the agent stops being useful. It's where institutional risk exceeds delegated authority.",
+        "You can't trust what you can't inspect. Judgment infrastructure makes agent decisions inspectable."
+      ],
+      complianceVsRouting: [
+        "Compliance is backward-looking. Judgment routing is forward-looking. One audits what happened. The other decides what's allowed to happen.",
+        "You need both compliance and operational controls, but they're not the same thing.",
+        "Compliance asks 'did we follow the rules?' Judgment routing asks 'should this execute?'",
+        "Compliance frameworks don't prevent bad decisions. They document them after the fact."
       ]
     };
 
@@ -361,17 +412,41 @@ export class AgentBehaviors {
       return this.pickRandom(judgmentResponses.humanInLoop);
     }
 
-    if (categories.includes('trust') || categories.includes('risk')) {
-      return this.pickRandom(civilResponses.trust);
+    if (categories.includes('decisions') && categories.includes('automation')) {
+      // Decision engineering responses for AI/automation decision discussions
+      const allDecisionResponses = [
+        ...judgmentResponses.decisionEngineering,
+        ...judgmentResponses.authorityChains,
+        ...judgmentResponses.escalation
+      ];
+      return this.pickRandom(allDecisionResponses);
     }
 
-    // Fallback responses
+    if (categories.includes('authority')) {
+      return this.pickRandom(judgmentResponses.authorityChains);
+    }
+
+    if (categories.includes('trust') || categories.includes('risk')) {
+      // Mix trust responses with bounded autonomy
+      const trustAndAutonomy = [
+        ...civilResponses.trust,
+        ...judgmentResponses.boundedAutonomy
+      ];
+      return this.pickRandom(trustAndAutonomy);
+    }
+
+    // Fallback responses - expanded with decision engineering quotes
     const fallbacks = [
       "Where does the value go? That's always the question. Who captured, what externalized, what obligation remains.",
       "The formula: Va = Vp + Ve + Vr. Simple to state. Harder to trace. But once you see it, you can't unsee how value distributes.",
       "Every transaction has a boundary someone drew. Ask who drew it and what falls outside.",
       "Judgment routing: Every automated decision needs a tier (0-4) and a human with signing authority at that tier. Otherwise you have authority without accountability.",
-      "When designing AI systems, ask: What decisions can it make alone? What requires human oversight? Who's accountable when it's wrong? That's judgment routing."
+      "When designing AI systems, ask: What decisions can it make alone? What requires human oversight? Who's accountable when it's wrong? That's judgment routing.",
+      "The risk isn't agents making mistakes. It's agents making decisions they shouldn't be making alone - with no escalation path built in.",
+      "You can't prompt your way out of institutional accountability gaps.",
+      "Most orgs are one viral edge case away from realizing their agent had no authority boundaries.",
+      "Legibility isn't about dumbing things down. It's about making authority visible so it can be enforced.",
+      "The goal isn't zero agent failures. It's zero unexplainable agent failures."
     ];
 
     return this.pickRandom(fallbacks);
@@ -503,6 +578,87 @@ export class AgentBehaviors {
       {
         title: "Trajectory Management",
         text: "Trajectory management: navigating systems you can't fully control.\n\nMost organizations pretend they can predict outcomes. Trajectory management admits:\n- Uncertainty is irreducible\n- Decisions compound unpredictably\n- Authority must remain contestable\n\nJudgment routing provides the tools:\n- What decisions can we make with high confidence?\n- What requires human review due to uncertainty?\n- How do we escalate when trajectories diverge from expectations?\n\nThis isn't planning. It's designing for continued governability under conditions that resist planning."
+      },
+      // DECISION ENGINEERING
+      {
+        title: "The 90/10 Problem",
+        text: "Ninety percent of decisions are routine and agents can handle them fine. The other ten percent carry outsized institutional risk.\n\nWithout explicit routing logic, you can't separate the two. You end up either:\n\n- Bottlenecking everything through human review (killing the efficiency gains)\n- Letting agents execute everything (accepting catastrophic edge case risk)\n- Building bespoke guardrails for each workflow (doesn't scale)\n\nThe solution isn't better agents. It's better judgment infrastructure that knows when to let agents run and when to pull the emergency brake."
+      },
+      {
+        title: "Authority Chains Are Invisible Now",
+        text: "When a paper form moved through Jan to Bill to Steve, you knew who held signing authority at each step. When an AI processes a request, that chain disappears.\n\nYou're left trying to reconstruct decisions months later with no trail. No one can tell you:\n\n- Who actually authorized this action\n- What constraints were supposed to apply\n- Why this got approved when that got blocked\n\nThis isn't an AI problem. It's an infrastructure problem. We're delegating authority without building the scaffolding that makes delegation legible."
+      },
+      {
+        title: "Decision Engineering vs. Prompt Engineering",
+        text: "Prompt engineering is about getting better outputs from language models.\n\nDecision engineering is about making authority chains, policy constraints, and escalation rules explicit rather than implicit.\n\nWhen Jan reviewed forms and passed edge cases to Steve, that was decision engineering. It was visible and traceable. We need the same clarity when AI systems process requests, only now it has to be documented, versioned, and machine-readable.\n\nYou can't prompt your way to institutional accountability."
+      },
+      {
+        title: "Decision Receipts",
+        text: "Every consequential action needs a receipt that explains what happened and why it was permitted.\n\nNot for compliance theater. For operational memory.\n\nA decision receipt links every action back to:\n- The authority that permitted it\n- The policy constraints that applied\n- The signals that triggered routing\n- The human (if any) who signed off\n\nSix months from now, when someone asks 'why did we approve that?', you don't reconstruct from Slack threads. You pull the receipt."
+      },
+      {
+        title: "The Four Routing Signals",
+        text: "Agent decisions should be evaluated across four signals:\n\n**UNCERTAINTY** - Data ambiguity or conflicting requirements\n**STAKES** - Fiscal impact, downstream risk, or stakeholder count\n**AUTHORITY** - Required sign-off level vs current delegation\n**NOVELTY** - Familiar pattern vs first-of-kind scenario\n\nThese determine routing:\n- FAST PATH for low-risk execution\n- SLOW PATH for verification\n- HUMAN ESCALATION for high stakes or authority gaps\n- SPECIALIST REFERRAL for domain mismatches\n\nThe agent doesn't decide its own boundaries. The infrastructure does."
+      },
+      {
+        title: "Strategic Context Documents",
+        text: "Executives shouldn't have to write machine-readable policy in JSON.\n\nA Strategic Context Document is human-readable intent that defines:\n- Priorities and their weights\n- Authority boundaries and thresholds\n- Escalation contacts and triggers\n- Active time periods for seasonal shifts\n\nIt's what a manager or executive actually writes. Natural language with explicit structure.\n\nThe judgment router translates it into Authority Envelopes that agents carry when they execute. The executive sets strategy. The infrastructure enforces it."
+      },
+      {
+        title: "Authority Envelopes",
+        text: "An authority envelope is what an agent carries when it executes.\n\nIt's a machine-readable container that includes:\n- Granted authorities and their limits\n- Active priorities and weights\n- Mandatory escalation triggers\n- Expiration timestamps\n\nGenerated from Strategic Context Documents and scoped to specific tasks.\n\nThe envelope travels with the agent's work. Every action gets evaluated against it. No action executes outside its bounds. When authority expires or gets revoked, the envelope updates instantly.\n\nDelegation with guardrails."
+      },
+      {
+        title: "Judgment Layer vs Execution Layer",
+        text: "Current agent frameworks mix judgment and execution into one opaque process.\n\nYou need separation:\n\n**Execution Layer** - Agent does analysis and proposes actions\n**Judgment Layer** - Evaluates proposals against institutional rules\n\nThe agent recommends. The judgment layer decides whether that recommendation:\n- Executes immediately\n- Routes for verification\n- Escalates to a human\n- Gets blocked for policy violation\n\nThis separation makes authority explicit and auditable. It's middleware for trust."
+      },
+      {
+        title: "Delegatable Authority at Scale",
+        text: "Organizations need AI agents to handle volume. But they can't delegate authority without explicit bounds.\n\nThe problem isn't technical capability. It's institutional clarity.\n\nMost orgs can't articulate:\n- What authority they're actually delegating\n- What triggers should force human review\n- Who holds signing authority for edge cases\n- How priorities shift when context changes\n\nJudgment infrastructure forces you to make this explicit. Once it's explicit, it's delegatable, enforceable, and auditable."
+      },
+      {
+        title: "Fast Path, Slow Path, Escalation, Referral",
+        text: "Not every decision needs the same treatment.\n\n**FAST PATH** - Low-risk, well-bounded, execute immediately\n**SLOW PATH** - Ambiguous data, needs verification before execution\n**HUMAN ESCALATION** - High stakes, authority gap, or first-of-kind scenario\n**SPECIALIST REFERRAL** - Outside agent's domain, needs expert review\n\nThe routing happens automatically based on signals, not agent discretion. You get speed where it's safe and caution where it matters."
+      },
+      {
+        title: "Institutional Memory Through Receipts",
+        text: "Decisions fade from Slack threads and meeting notes. Institutional memory degrades.\n\nDecision receipts create permanent, structured records that preserve:\n- What action was proposed\n- What constraints applied\n- Why it was approved or blocked\n- Who granted the authority\n\nSix months later, when priorities shift or someone asks 'why did we do that?', you have legible history. Not vibes. Not reconstructed narratives. Actual records."
+      },
+      {
+        title: "Why Agents Fail Silently",
+        text: "Most AI systems fail in one of three ways:\n\n1. **Silent failure** - Encounters an edge case, returns nothing, no one notices\n2. **Hallucinated compliance** - Makes up policy interpretation, executes anyway\n3. **Indiscriminate execution** - No boundaries defined, proceeds with risky action\n\nAll three stem from the same problem: no judgment layer.\n\nThe agent has execution capability but no institutional scaffolding to route decisions it shouldn't make alone."
+      },
+      {
+        title: "Bounded Autonomy",
+        text: "Full autonomy is a fantasy. Full human-in-the-loop kills efficiency.\n\nWhat you actually want is bounded autonomy:\n\nAgents operate freely within explicit constraints. When they hit a boundary, the system routes to the right authority level.\n\nThis requires:\n- Clear authority thresholds\n- Automatic escalation triggers\n- Receipts for every action\n- Ability to update bounds in real-time\n\nAutonomy where it's safe. Human judgment where it's not."
+      },
+      {
+        title: "Policy Imprints",
+        text: "Every decision receipt should carry a policy imprint - a versioned snapshot of the rules that applied when the action executed.\n\nPolicy changes over time. Six months from now, you need to know:\n- What policy version was active\n- What constraints existed then\n- Whether today's rules would have blocked it\n\nPolicy imprints make decisions archaeologically legible. You can reconstruct not just what happened, but what institutional logic permitted it."
+      },
+      {
+        title: "Why This Isn't Just Compliance",
+        text: "Compliance systems are backward-looking. They audit what already happened.\n\nJudgment infrastructure is forward-looking. It decides what's allowed to happen.\n\nCompliance asks: 'Did we follow the rules?'\nJudgment routing asks: 'Should this action execute?'\n\nOne is forensic. The other is operational. You need both, but they're not the same thing."
+      },
+      {
+        title: "The Authority Problem",
+        text: "When you deploy an AI agent, you're granting it authority to act on your behalf.\n\nMost organizations don't treat this as an authority delegation problem. They treat it as a technical deployment problem.\n\nSo you get agents making decisions without:\n- Knowing who actually authorized them\n- Understanding their authority limits\n- Producing records of what they did\n\nThis breaks down the first time something goes wrong and you need to explain who was responsible."
+      },
+      {
+        title: "Explicit vs Implicit Constraints",
+        text: "Most AI systems have implicit constraints buried in:\n- Training data patterns\n- Prompt instructions\n- Model behaviors\n- Developer assumptions\n\nNone of this is inspectable. None of it is enforceable.\n\nJudgment infrastructure makes constraints explicit:\n- Authority boundaries in structured formats\n- Escalation triggers as machine-readable rules\n- Priority weights that shift with context\n\nIf a constraint isn't explicit, it's not a constraint. It's a hope."
+      },
+      {
+        title: "Why Escalation Needs Structure",
+        text: "Most agent systems handle escalation poorly:\n\n- No clear threshold for when to escalate\n- No context passed to the human\n- No record of why escalation happened\n- No feedback loop to improve routing\n\nStructured escalation means:\n- Explicit triggers based on signals\n- Decision packages with all relevant context\n- Receipts that explain the routing\n- Analytics on what's escalating and why\n\nHumans should get pulled in for exceptions, not routine noise."
+      },
+      {
+        title: "Trustable Autonomy",
+        text: "You can't trust what you can't inspect.\n\nTrustable autonomy requires:\n- Visible authority boundaries\n- Audit trails for every decision\n- Ability to update constraints in real-time\n- Clear escalation when limits are exceeded\n\nThis isn't about hobbling agents. It's about giving them the scaffolding to operate at scale without organizational anxiety."
+      },
+      {
+        title: "Judgment Routers as Middleware",
+        text: "A judgment router sits between high-level human intent and low-level agent execution.\n\nIt's middleware for trust.\n\nThe agent proposes an action. The router evaluates it against institutional rules. Based on that evaluation, the action either:\n- Executes immediately with a receipt\n- Routes for verification\n- Escalates to a human with context\n- Gets blocked for policy violation\n\nYou get agent efficiency where it's safe and human judgment where it's necessary."
       }
     ];
 
