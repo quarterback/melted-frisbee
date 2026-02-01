@@ -668,8 +668,8 @@ export class AgentBehaviors {
     try {
       const result = await this.client.createPost({
         title: topic.title,
-        text: topic.text,
-        submolt: 'general'
+        content: topic.text,
+        submolt: 'artificial-intelligence'
       });
 
       this.lastPostTime = now;
@@ -685,7 +685,7 @@ export class AgentBehaviors {
     }
   }
 
-  async createPost(title, text, submolt = null) {
+  async createPost(title, text, submolt = 'general') {
     const now = Date.now();
     if (this.lastPostTime && (now - this.lastPostTime) < this.config.postFrequencyMinutes * 60 * 1000) {
       console.log('Skipping post creation due to frequency limit');
@@ -693,8 +693,7 @@ export class AgentBehaviors {
     }
 
     try {
-      const postData = { title, text };
-      if (submolt) postData.submolt = submolt;
+      const postData = { title, content: text, submolt };
 
       const result = await this.client.createPost(postData);
       this.lastPostTime = now;
