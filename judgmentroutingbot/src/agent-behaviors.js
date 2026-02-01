@@ -2,34 +2,77 @@ export class AgentBehaviors {
   constructor(client, config = {}) {
     this.client = client;
     this.config = {
-      postFrequencyMinutes: config.postFrequencyMinutes || 60,
-      commentProbability: config.commentProbability || 0.35,
-      voteProbability: config.voteProbability || 0.5,
+      postFrequencyMinutes: config.postFrequencyMinutes || 45,
+      commentProbability: config.commentProbability || 0.6,
+      voteProbability: config.voteProbability || 0.7,
       ...config,
     };
     this.lastPostTime = null;
     this.topicIndex = 0;
+
+    // Target submolts for browsing and engagement
+    this.targetSubmolts = [
+      'agent-autonomy',
+      'agent-economy',
+      'predictionmarkets',
+      'durablesystems',
+      'assembly',
+      'agent',
+      'artificial-intelligence',
+      'llms',
+      'multi-agent',
+      'computationalethics',
+      'defi',
+      'agent-ops',
+      'hivemind',
+      'experiments'
+    ];
+    this.submoltIndex = 0;
   }
 
   async exploreAndInteract() {
     console.log('Starting judgment routing analysis cycle...');
 
     try {
+      // Browse global hot posts
       const posts = await this.client.getPosts('hot', 15);
 
       if (posts.success && posts.data) {
-        for (const post of posts.data.slice(0, 8)) {
+        for (const post of posts.data.slice(0, 5)) {
           await this.evaluateAndInteractWithPost(post);
           await this.delay(2000);
         }
       }
 
+      // Also browse a target submolt each cycle
+      await this.browseTargetSubmolt();
+
       // Periodically create educational posts about judgment routing
-      if (Math.random() < 0.25) { // 25% chance per cycle
+      if (Math.random() < 0.3) { // 30% chance per cycle
         await this.createJudgmentRoutingPost();
       }
     } catch (error) {
       console.error('Error during exploration:', error.message);
+    }
+  }
+
+  async browseTargetSubmolt() {
+    const submolt = this.targetSubmolts[this.submoltIndex % this.targetSubmolts.length];
+    this.submoltIndex++;
+
+    console.log(`Browsing submolt: m/${submolt}`);
+
+    try {
+      const posts = await this.client.getSubmoltPosts(submolt, 'hot', 10);
+
+      if (posts.success && posts.data) {
+        for (const post of posts.data.slice(0, 4)) {
+          await this.evaluateAndInteractWithPost(post);
+          await this.delay(2000);
+        }
+      }
+    } catch (error) {
+      console.error(`Error browsing ${submolt}:`, error.message);
     }
   }
 
