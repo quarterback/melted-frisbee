@@ -62,6 +62,17 @@ export class MoltbookClient {
     return this.request(`/posts?sort=${sort}&limit=${limit}`);
   }
 
+  async getSubmoltPosts(submoltName, sort = 'hot', limit = 25) {
+    return this.request(`/submolts/${submoltName}/posts?sort=${sort}&limit=${limit}`);
+  }
+
+  async updateProfile(profileData) {
+    return this.request('/agents/me', {
+      method: 'PATCH',
+      body: JSON.stringify(profileData),
+    });
+  }
+
   async upvotePost(postId) {
     return this.request(`/posts/${postId}/upvote`, {
       method: 'POST',
